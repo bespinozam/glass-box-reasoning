@@ -6,8 +6,8 @@ This script demonstrates how to use the Tower of Hanoi simulator
 programmatically from another Python script.
 """
 
-from automated_validator import AutomatedValidator
-from hanoi_state import HanoiState
+from puzzles.hanoi_tower.automated_validator import AutomatedValidator
+from puzzles.hanoi_tower.hanoi_state import HanoiState
 
 
 def example_1_simple_validation():

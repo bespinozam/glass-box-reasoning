@@ -6,10 +6,10 @@ This script demonstrates the complete workflow for evaluating a reasoning model
 on the Tower of Hanoi puzzle.
 """
 
-from output_logger import OutputLogger
-from output_parser import parse_hanoi_output
-from automated_validator import AutomatedValidator
-from results_analyzer import ResultsAnalyzer
+from output_logging.output_logger import OutputLogger
+from output_logging.output_parser import parse_hanoi_output
+from puzzles.hanoi_tower.automated_validator import AutomatedValidator
+from output_logging.results_analyzer import ResultsAnalyzer
 
 
 def evaluate_model_output(

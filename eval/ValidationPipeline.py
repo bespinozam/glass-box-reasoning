@@ -1,15 +1,15 @@
 from eval.utils import create_hanoi_prompt
-from models.deepseek import load_model, load_tokenizer
-from puzzles.hanoi_tower.output_parser import parse_hanoi_output
+from models.deepseek import load_tokenizer, Model
+from output_logging.output_parser import parse_hanoi_output
 from puzzles.hanoi_tower.automated_validator import AutomatedValidator
-from puzzles.hanoi_tower.output_logger import OutputLogger
+from output_logging.output_logger import OutputLogger
 
 class ValidationPipe:
     def __init__(self, model_name):
         self.model_name = model_name
 
         self.tokenizer = load_tokenizer(model_name)
-        self.model = load_model(model_name)
+        self.model = Model(model_name, self.tokenizer)
 
 
     def run_evaluation(self, level_limit=5, num_samples=5, verbose=False):

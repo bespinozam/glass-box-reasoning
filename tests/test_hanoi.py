@@ -5,9 +5,9 @@ Test Suite for Tower of Hanoi Simulator
 This script tests various components of the Tower of Hanoi simulator.
 """
 
-from hanoi_state import HanoiState
-from automated_validator import AutomatedValidator
-from interactive_solver import InteractiveSolver
+from puzzles.hanoi_tower.hanoi_state import HanoiState
+from puzzles.hanoi_tower.automated_validator import AutomatedValidator
+from puzzles.hanoi_tower.interactive_solver import InteractiveSolver
 
 
 def test_state_initialization():

@@ -6,8 +6,8 @@ This script demonstrates how to parse reasoning model output and validate
 the extracted moves using the Tower of Hanoi validator.
 """
 
-from output_parser import parse_hanoi_output, parse_hanoi_output_lenient, validate_and_parse
-from automated_validator import AutomatedValidator
+from output_logging.output_parser import parse_hanoi_output, parse_hanoi_output_lenient, validate_and_parse
+from puzzles.hanoi_tower.automated_validator import AutomatedValidator
 
 
 def example_parse_and_validate():

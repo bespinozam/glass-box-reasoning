@@ -6,8 +6,8 @@ This demonstrates how the parser handles reasoning model outputs
 where the model generates multiple attempts and we want the final answer.
 """
 
-from output_parser import parse_hanoi_output, parse_hanoi_output_lenient
-from automated_validator import AutomatedValidator
+from output_logging.output_parser import parse_hanoi_output, parse_hanoi_output_lenient
+from puzzles.hanoi_tower.automated_validator import AutomatedValidator
 
 
 def test_reasoning_model_with_corrections():

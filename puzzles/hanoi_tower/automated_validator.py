@@ -5,7 +5,7 @@ This module provides functionality to validate a complete sequence of moves
 for the Tower of Hanoi puzzle, useful for evaluating reasoning model outputs.
 """
 
-from hanoi_state import HanoiState
+from puzzles.hanoi_tower.hanoi_state import HanoiState
 from typing import List, Tuple, Dict, Any, Optional
 import json
 

@@ -5,9 +5,9 @@ Example: Model Evaluation Pipeline
 This demonstrates how to use the OutputLogger with a model evaluation pipeline.
 """
 
-from output_logger import OutputLogger
-from output_parser import parse_hanoi_output
-from automated_validator import AutomatedValidator
+from output_logging.output_logger import OutputLogger
+from output_logging.output_parser import parse_hanoi_output
+from puzzles.hanoi_tower.automated_validator import AutomatedValidator
 from datetime import datetime
 
 

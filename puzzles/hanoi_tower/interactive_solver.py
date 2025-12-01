@@ -6,7 +6,7 @@ puzzle step by step, allowing users to input moves and see the state after
 each move.
 """
 
-from hanoi_state import HanoiState
+from puzzles.hanoi_tower.hanoi_state import HanoiState
 from typing import List, Optional
 
 

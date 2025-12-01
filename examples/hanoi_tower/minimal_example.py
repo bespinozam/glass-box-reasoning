@@ -5,7 +5,7 @@ Minimal example: How to use Tower of Hanoi validator in your script.
 Copy this into your own script and modify as needed.
 """
 
-from automated_validator import AutomatedValidator
+from puzzles.hanoi_tower.automated_validator import AutomatedValidator
 
 if __name__ == "__main__":
     # Initialize for N=3 disks
