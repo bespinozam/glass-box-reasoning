@@ -24,13 +24,13 @@ def create_hanoi_prompt(tokenizer, n:int=3):
     user_prompt = f"""
             I have a puzzle with {n} disks of different sizes with
         Initial configuration:
-        • Peg 0: {n} (bottom),. . . 2, 1 (top)
+        • Peg 0: {n} (bottom) {[i for i in range(n, 0, -1)]} (top)
         • Peg 1: (empty)
         • Peg 2: (empty)
         Goal configuration:
         • Peg 0: (empty)
         • Peg 1: (empty)
-        • Peg 2: {n} (bottom),. . . 2, 1 (top)
+        • Peg 2: {n} (bottom) {[i for i in range(n, 0, -1)]} (top)
         Rules:
         • Only one disk can be moved at a time.
         • Only the top disk from any stack can be moved.

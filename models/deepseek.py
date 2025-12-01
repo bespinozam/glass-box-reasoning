@@ -32,7 +32,7 @@ def load_tokenizer(model_name: str):
 
 class Model:
     def __init__(self, model_name, tokenizer):
-        self.model = load_model(DEEPSEEK_R1_1p5B)
+        self.model = load_model(model_name)
         self.tokenizer = tokenizer
 
     def generate_streaming(self, prompt, max_new_tokens, temperature, top_p, do_sample):
