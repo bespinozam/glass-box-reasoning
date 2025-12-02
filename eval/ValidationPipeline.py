@@ -16,7 +16,7 @@ class ValidationPipe:
         self.model = Model(model_name, self.tokenizer)
 
 
-    def run_evaluation(self, level_limit=5, num_samples=5, verbose=False, wandb_key=None):
+    def run_evaluation(self, level_limit=5, num_samples=5, verbose=False, wandb_key=None, experiment_name="experiment_1", start_level=1):
         print(f"Running evaluation for model {self.model_name}")
         logger = OutputLogger(
             run_id="test_run_2025",
@@ -33,7 +33,7 @@ class ValidationPipe:
             wandb.login(key=wandb_key)
             wandb.init(
                 project="the-illusion-of-thinking",
-                name="experiment_1",
+                name=experiment_name,
                 config={
                     "model_name": self.model_name,
                     "level_limit": level_limit,
@@ -51,15 +51,16 @@ class ValidationPipe:
             ]
             summary_table = wandb.Table(columns=summary_columns)
 
-            # Store full iteration data for JSON export
-            all_iterations_data = []
+            # Create directory for per-iteration artifacts
+            wandb_json_dir = logger.output_dir / "wandb_iterations"
+            wandb_json_dir.mkdir(exist_ok=True)
         else:
             print("Skipping wandb setup")
             summary_table = None
-            all_iterations_data = None
+            wandb_json_dir = None
 
 
-        for current_level in range(1, level_limit + 1):
+        for current_level in range(start_level, level_limit + 1):
             print(f"Running evaluation for level {current_level}")
             run_results[str(current_level)] = {"passed": 0, "parse_failed": 0, "validation_failed": 0}
             for sample_iter in range(num_samples):
@@ -139,7 +140,6 @@ class ValidationPipe:
                                 "error_message": result.get("error_message")
                             }
                         }
-                        all_iterations_data.append(full_iteration_data)
 
                         # Add summary row to table (for dashboard visualization)
                         summary_table.add_data(
@@ -163,6 +163,29 @@ class ValidationPipe:
                             f"level_{current_level}/sample_{sample_iter}/total_moves": result.get("total_moves", 0),
                             f"level_{current_level}/sample_{sample_iter}/efficiency": result.get("efficiency", 0),
                         })
+
+                        # Upload artifact immediately for this iteration
+                        iteration_file = wandb_json_dir / f"level_{current_level}_sample_{sample_iter}.json"
+                        with open(iteration_file, 'w', encoding='utf-8') as f:
+                            json.dump({
+                                "metadata": {
+                                    "model_name": self.model_name,
+                                    "level": current_level,
+                                    "sample_idx": sample_iter,
+                                    "timestamp": timestamp
+                                },
+                                "iteration": full_iteration_data
+                            }, f, indent=2, ensure_ascii=False)
+
+                        # Create and upload artifact
+                        artifact = wandb.Artifact(
+                            name=f"iteration-level{current_level}-sample{sample_iter}",
+                            type="iteration-result",
+                            description=f"Full data for level {current_level}, sample {sample_iter}"
+                        )
+                        artifact.add_file(str(iteration_file))
+                        wandb.log_artifact(artifact)
+                        print(f"\t  ✓ Uploaded artifact for level {current_level}, sample {sample_iter}")
 
                     if result["is_solved"]:
                         run_results[str(current_level)]["passed"] += 1
@@ -199,7 +222,6 @@ class ValidationPipe:
                             "parse_error": error,
                             "validation_result": None
                         }
-                        all_iterations_data.append(full_iteration_data)
 
                         # Add summary row to table
                         summary_table.add_data(
@@ -221,6 +243,29 @@ class ValidationPipe:
                             f"level_{current_level}/sample_{sample_iter}/tokens_used": tokens_used,
                             f"level_{current_level}/sample_{sample_iter}/parse_error": error,
                         })
+
+                        # Upload artifact immediately for this iteration
+                        iteration_file = wandb_json_dir / f"level_{current_level}_sample_{sample_iter}.json"
+                        with open(iteration_file, 'w', encoding='utf-8') as f:
+                            json.dump({
+                                "metadata": {
+                                    "model_name": self.model_name,
+                                    "level": current_level,
+                                    "sample_idx": sample_iter,
+                                    "timestamp": timestamp
+                                },
+                                "iteration": full_iteration_data
+                            }, f, indent=2, ensure_ascii=False)
+
+                        # Create and upload artifact
+                        artifact = wandb.Artifact(
+                            name=f"iteration-level{current_level}-sample{sample_iter}",
+                            type="iteration-result",
+                            description=f"Full data for level {current_level}, sample {sample_iter}"
+                        )
+                        artifact.add_file(str(iteration_file))
+                        wandb.log_artifact(artifact)
+                        print(f"\t  ✓ Uploaded artifact for level {current_level}, sample {sample_iter}")
 
                     run_results[str(current_level)]["parse_failed"] += 1
 
@@ -277,85 +322,10 @@ class ValidationPipe:
             )
             wandb.log({"level_summary": level_summary_table})
 
-            # Save FULL iteration data to JSON files and upload as artifacts
-            print("\nSaving full iteration data to wandb...")
-
-            # Create temporary directory for wandb JSON files
-            wandb_json_dir = logger.output_dir / "wandb_json"
-            wandb_json_dir.mkdir(exist_ok=True)
-
-            # Save all iterations to a single comprehensive JSON file
-            full_data_file = wandb_json_dir / "all_iterations_full_data.json"
-            with open(full_data_file, 'w', encoding='utf-8') as f:
-                json.dump({
-                    "metadata": {
-                        "model_name": self.model_name,
-                        "run_id": "test_run_2025",
-                        "level_limit": level_limit,
-                        "num_samples": num_samples,
-                        "total_iterations": len(all_iterations_data),
-                        "generated_at": datetime.utcnow().isoformat()
-                    },
-                    "iterations": all_iterations_data,
-                    "summary": run_results
-                }, f, indent=2, ensure_ascii=False)
-
-            print(f"  ✓ Saved {len(all_iterations_data)} iterations to {full_data_file.name}")
-
-            # Also save per-level JSON files for easier access
-            for level in range(1, level_limit + 1):
-                level_data = [
-                    iteration for iteration in all_iterations_data
-                    if iteration["n_disks"] == level
-                ]
-                if level_data:
-                    level_file = wandb_json_dir / f"level_{level}_iterations.json"
-                    with open(level_file, 'w', encoding='utf-8') as f:
-                        json.dump({
-                            "metadata": {
-                                "model_name": self.model_name,
-                                "level": level,
-                                "num_samples": len(level_data),
-                                "generated_at": datetime.utcnow().isoformat()
-                            },
-                            "iterations": level_data,
-                            "summary": run_results[str(level)]
-                        }, f, indent=2, ensure_ascii=False)
-                    print(f"  ✓ Saved level {level} data to {level_file.name}")
-
-            # Upload JSON files as wandb artifact
-            json_artifact = wandb.Artifact(
-                name=f"full-iteration-data-{self.model_name}",
-                type="detailed-results",
-                description=f"Complete iteration data with full outputs for {self.model_name}"
-            )
-
-            # Add all JSON files
-            for json_file in wandb_json_dir.glob("*.json"):
-                json_artifact.add_file(str(json_file))
-
-            wandb.log_artifact(json_artifact)
-            print(f"  ✓ Uploaded full data artifact: full-iteration-data-{self.model_name}")
-
-            # Also upload original JSONL files as a separate artifact
-            jsonl_artifact = wandb.Artifact(
-                name=f"jsonl-outputs-{self.model_name}",
-                type="model-outputs",
-                description=f"Original JSONL output files for {self.model_name}"
-            )
-
-            # Add all JSONL files from the output directory
-            for jsonl_file in logger.output_dir.glob("*.jsonl"):
-                jsonl_artifact.add_file(str(jsonl_file))
-
-            wandb.log_artifact(jsonl_artifact)
-            print(f"  ✓ Uploaded JSONL artifact: jsonl-outputs-{self.model_name}")
-
             # Finish wandb run
             wandb.finish()
             print("\n✓ All data logged to wandb successfully!")
             print(f"  - Summary table: iterations_summary")
-            print(f"  - Full data JSON: full-iteration-data-{self.model_name}")
-            print(f"  - Original JSONL: jsonl-outputs-{self.model_name}")
+            print(f"  - Per-iteration artifacts uploaded in real-time")
 
         return run_results
